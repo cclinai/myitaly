@@ -18,66 +18,95 @@
       <div class="header-top">
         <span class="header-eyebrow">IG 旅遊精選</span>
         <h1 class="header-title">Italia<em>.</em></h1>
-        <p class="header-sub">小吃・購物・餐廳・景點</p>
+        <div class="page-nav">
+          <button class="page-btn active" data-page="places">地點</button>
+          <button class="page-btn" data-page="tickets">票券</button>
+        </div>
       </div>
       <div class="city-nav" id="city-nav">
-        <button class="city-btn active" data-city="roma">Roma</button>
-        <button class="city-btn" data-city="firenze">Firenze</button>
-        <button class="city-btn" data-city="siena">tuscany</button>
-        <button class="city-btn" data-city="venezia">Venezia</button>
-        <button class="city-btn" data-city="milano">Milano</button>
-        <button class="city-btn" data-city="ig_url">IGReels</button>
+        <button class="city-btn active" data-city="roma">羅馬 Roma</button>
+        <button class="city-btn" data-city="firenze">佛羅倫斯 Firenze</button>
+        <button class="city-btn" data-city="siena">托斯卡納 Tuscany</button>
+        <button class="city-btn" data-city="venezia">威尼斯 Venezia</button>
+        <button class="city-btn" data-city="milano">米蘭 Milano</button>
       </div>
     </div>
   </header>
 
   <main class="main-content">
 
-    <div class="toolbar">
-      <div class="cat-tabs" id="cat-tabs">
-        <button class="cat-tab active" data-cat="all">全部</button>
-        <button class="cat-tab" data-cat="food">
-          <span class="cat-icon food-icon"></span>小吃
+    <!-- 地點頁 -->
+    <div id="page-places">
+      <div class="toolbar">
+        <div class="cat-tabs" id="cat-tabs">
+          <button class="cat-tab active" data-cat="all">全部</button>
+          <button class="cat-tab" data-cat="food">
+            <span class="cat-icon food-icon"></span>小吃
+          </button>
+          <button class="cat-tab" data-cat="shop">
+            <span class="cat-icon shop-icon"></span>購物
+          </button>
+          <button class="cat-tab" data-cat="restaurant">
+            <span class="cat-icon restaurant-icon"></span>餐廳
+          </button>
+          <button class="cat-tab" data-cat="spot">
+            <span class="cat-icon spot-icon"></span>景點
+          </button>
+        </div>
+        <button class="add-btn" id="open-modal-btn">
+          <span>＋</span> 新增地點
         </button>
-        <button class="cat-tab" data-cat="shop">
-          <span class="cat-icon shop-icon"></span>購物
-        </button>
-        <button class="cat-tab" data-cat="restaurant">
-          <span class="cat-icon restaurant-icon"></span>餐廳
-        </button>
-        <button class="cat-tab" data-cat="spot">
-          <span class="cat-icon spot-icon"></span>景點
-        </button>
-        
       </div>
-      <button class="add-btn" id="open-modal-btn">
-        <span>＋</span> 新增地點
-      </button>
+
+      <div class="search-bar">
+        <input class="search-input" id="search-input" type="text" placeholder="搜尋地點名稱…" oninput="onSearch()" />
+      </div>
+
+      <div class="stats-row" id="stats-row">
+        <div class="stat-chip"><span class="stat-n" id="n-food">0</span> 小吃</div>
+        <div class="stat-chip"><span class="stat-n" id="n-shop">0</span> 購物</div>
+        <div class="stat-chip"><span class="stat-n" id="n-restaurant">0</span> 餐廳</div>
+        <div class="stat-chip"><span class="stat-n" id="n-spot">0</span> 景點</div>
+      </div>
+
+      <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>載入中…</span>
+      </div>
+
+      <div id="place-list" class="place-list"></div>
+
+      <div id="empty-state" class="empty-state" style="display:none">
+        <div class="empty-icon">✦</div>
+        <p>這個城市還沒有地點</p>
+        <button class="add-btn" onclick="openModal()">新增第一個地點</button>
+      </div>
     </div>
 
-    <div class="stats-row" id="stats-row">
-      <div class="stat-chip" id="stat-food"><span class="stat-n" id="n-food">0</span> 小吃</div>
-      <div class="stat-chip" id="stat-shop"><span class="stat-n" id="n-shop">0</span> 購物</div>
-      <div class="stat-chip" id="stat-restaurant"><span class="stat-n" id="n-restaurant">0</span> 餐廳</div>
-       <div class="stat-chip" id="stat-spot"><span class="stat-n" id="n-spot">0</span> 景點</div>
-    </div>
-
-    <div id="loading" class="loading-state">
-      <div class="spinner"></div>
-      <span>載入中…</span>
-    </div>
-
-    <div id="place-list" class="place-list"></div>
-
-    <div id="empty-state" class="empty-state" style="display:none">
-      <div class="empty-icon">✦</div>
-      <p>這個城市還沒有地點</p>
-      <button class="add-btn" onclick="openModal()">新增第一個地點</button>
+    <!-- 票券頁 -->
+    <div id="page-tickets" style="display:none">
+      <div class="toolbar">
+        <div class="cat-tabs" id="ticket-city-filter">
+          <button class="cat-tab active" data-city="all">全部</button>
+          <button class="cat-tab" data-city="roma">Roma</button>
+          <button class="cat-tab" data-city="firenze">Firenze</button>
+          <button class="cat-tab" data-city="siena">Siena</button>
+          <button class="cat-tab" data-city="venezia">Venezia</button>
+          <button class="cat-tab" data-city="milano">Milano</button>
+        </div>
+        <button class="add-btn" onclick="openTicketModal()">＋ 新增票券</button>
+      </div>
+      <div class="place-list" id="ticket-list"></div>
+      <div id="ticket-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">🎫</div>
+        <p>還沒有票券，快新增吧</p>
+        <button class="add-btn" onclick="openTicketModal()">新增第一張票券</button>
+      </div>
     </div>
 
   </main>
 
-  <!-- Add / Edit Modal -->
+  <!-- 地點 Modal -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
     <div class="modal" id="modal">
       <div class="modal-header">
@@ -102,7 +131,7 @@
             <label class="radio-item">
               <input type="radio" name="cat" value="restaurant" /> 餐廳
             </label>
-              <label class="radio-item">
+            <label class="radio-item">
               <input type="radio" name="cat" value="spot" /> 景點
             </label>
           </div>
@@ -116,8 +145,8 @@
           <input class="form-input" id="f-note" type="text" placeholder="例：需提前訂位，週一公休" />
         </div>
         <div class="form-group">
-          <label class="form-label">Google Maps 地址</label>
-          <input class="form-input" id="f-address" type="text" placeholder="例：Piazza Navona, Roma" />
+          <label class="form-label">Google Maps 連結</label>
+          <input class="form-input" id="f-address" type="text" placeholder="例：https://maps.app.goo.gl/xxxx" />
         </div>
         <div class="form-group">
           <label class="form-label">IG Reels 連結</label>
@@ -131,17 +160,67 @@
     </div>
   </div>
 
-  <!-- Config Modal (first run) -->
+  <!-- 票券 Modal -->
+  <div class="modal-overlay" id="ticket-modal-overlay" onclick="closeTicketModalOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="ticket-modal-title">新增票券</h2>
+        <button class="modal-close" onclick="closeTicketModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="t-id" />
+        <div class="form-group">
+          <label class="form-label">票券名稱</label>
+          <input class="form-input" id="t-name" type="text" placeholder="例：羅馬競技場" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">城市</label>
+          <select class="form-input" id="t-city">
+            <option value="roma">Roma</option>
+            <option value="firenze">Firenze</option>
+            <option value="siena">Siena</option>
+            <option value="venezia">Venezia</option>
+            <option value="milano">Milano</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div class="form-group" style="flex:1">
+            <label class="form-label">日期</label>
+            <input class="form-input" id="t-date" type="date" />
+          </div>
+          <div class="form-group" style="flex:1">
+            <label class="form-label">進場時間</label>
+            <input class="form-input" id="t-entry" type="time" />
+          </div>
+          <div class="form-group" style="flex:1">
+            <label class="form-label">預計離開</label>
+            <input class="form-input" id="t-exit" type="time" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">人員 QR Code</label>
+          <div id="member-list"></div>
+          <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="addMember()">＋ 新增人員</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeTicketModal()">取消</button>
+        <button class="btn-primary" onclick="saveTicket()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config Modal -->
   <div class="modal-overlay" id="config-overlay">
     <div class="modal config-modal">
       <div class="modal-header">
         <h2 class="modal-title">設定 Supabase</h2>
       </div>
       <div class="modal-body">
-        <p class="config-desc">myitaly</p>
+        <p class="config-desc">請輸入你的 Supabase 專案資訊，設定將儲存在瀏覽器本地。</p>
         <div class="form-group">
-          <label class="form-label">https://rwnkdmesqkxpfyokcykz.supabase.co</label>
-          <input class="form-input" id="cfg-url" type="text" placeholder="https://rwnkdmesqkxpfyokcykz.supabase.co" />
+          <label class="form-label">Supabase URL</label>
+          <input class="form-input" id="cfg-url" type="text" placeholder="https://xxxx.supabase.co" />
         </div>
         <div class="form-group">
           <label class="form-label">Anon Key</label>
