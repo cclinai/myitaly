@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>義大利旅遊清單</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="bg-texture"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <span class="header-eyebrow">IG 旅遊精選</span>
+        <h1 class="header-title">Italia<em>.</em></h1>
+        <p class="header-sub">小吃・購物・餐廳・景點</p>
+      </div>
+      <div class="city-nav" id="city-nav">
+        <button class="city-btn active" data-city="roma">Roma</button>
+        <button class="city-btn" data-city="firenze">Firenze</button>
+        <button class="city-btn" data-city="siena">tuscany</button>
+        <button class="city-btn" data-city="venezia">Venezia</button>
+        <button class="city-btn" data-city="milano">Milano</button>
+        <button class="city-btn" data-city="ig_url">IGReels</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <div class="toolbar">
+      <div class="cat-tabs" id="cat-tabs">
+        <button class="cat-tab active" data-cat="all">全部</button>
+        <button class="cat-tab" data-cat="food">
+          <span class="cat-icon food-icon"></span>小吃
+        </button>
+        <button class="cat-tab" data-cat="shop">
+          <span class="cat-icon shop-icon"></span>購物
+        </button>
+        <button class="cat-tab" data-cat="restaurant">
+          <span class="cat-icon restaurant-icon"></span>餐廳
+        </button>
+        <button class="cat-tab" data-cat="spot">
+          <span class="cat-icon spot-icon"></span>景點
+        </button>
+        
+      </div>
+      <button class="add-btn" id="open-modal-btn">
+        <span>＋</span> 新增地點
+      </button>
+    </div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-chip" id="stat-food"><span class="stat-n" id="n-food">0</span> 小吃</div>
+      <div class="stat-chip" id="stat-shop"><span class="stat-n" id="n-shop">0</span> 購物</div>
+      <div class="stat-chip" id="stat-restaurant"><span class="stat-n" id="n-restaurant">0</span> 餐廳</div>
+       <div class="stat-chip" id="stat-spot"><span class="stat-n" id="n-spot">0</span> 景點</div>
+    </div>
+
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      <span>載入中…</span>
+    </div>
+
+    <div id="place-list" class="place-list"></div>
+
+    <div id="empty-state" class="empty-state" style="display:none">
+      <div class="empty-icon">✦</div>
+      <p>這個城市還沒有地點</p>
+      <button class="add-btn" onclick="openModal()">新增第一個地點</button>
+    </div>
+
+  </main>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">新增地點</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-id" />
+        <div class="form-group">
+          <label class="form-label">地點名稱</label>
+          <input class="form-input" id="f-name" type="text" placeholder="例：Trattoria da Enzo" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分類</label>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input type="radio" name="cat" value="food" checked /> 小吃
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="cat" value="shop" /> 購物
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="cat" value="restaurant" /> 餐廳
+            </label>
+              <label class="radio-item">
+              <input type="radio" name="cat" value="spot" /> 景點
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="reco-label">必點推薦（每行一項）</label>
+          <textarea class="form-textarea" id="f-recos" rows="4" placeholder="例：&#10;卡邦尼義大利麵&#10;提拉米蘇"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">備註／說明</label>
+          <input class="form-input" id="f-note" type="text" placeholder="例：需提前訂位，週一公休" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Google Maps 地址</label>
+          <input class="form-input" id="f-address" type="text" placeholder="例：Piazza Navona, Roma" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">IG Reels 連結</label>
+          <input class="form-input" id="f-ig" type="text" placeholder="例：https://www.instagram.com/reel/..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn-primary" id="save-btn" onclick="savePlace()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config Modal (first run) -->
+  <div class="modal-overlay" id="config-overlay">
+    <div class="modal config-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">設定 Supabase</h2>
+      </div>
+      <div class="modal-body">
+        <p class="config-desc">myitaly</p>
+        <div class="form-group">
+          <label class="form-label">https://rwnkdmesqkxpfyokcykz.supabase.co</label>
+          <input class="form-input" id="cfg-url" type="text" placeholder="https://rwnkdmesqkxpfyokcykz.supabase.co" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Anon Key</label>
+          <input class="form-input" id="cfg-key" type="text" placeholder="eyJh..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="saveConfig()">連線</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
