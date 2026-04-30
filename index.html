@@ -21,6 +21,7 @@
         <div class="page-nav">
           <button class="page-btn active" data-page="places">地點</button>
           <button class="page-btn" data-page="tickets">票券</button>
+          <a class="page-btn" href="map.html">地圖</a>
         </div>
       </div>
       <div class="city-nav" id="city-nav">
@@ -153,6 +154,17 @@
           <label class="form-label">IG Reels 連結</label>
           <input class="form-input" id="f-ig" type="text" placeholder="例：https://www.instagram.com/reel/..." />
         </div>
+        <div style="display:flex;gap:12px">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">緯度 Latitude</label>
+          <input class="form-input" id="f-lat" type="number" step="any" placeholder="例：41.9028" />
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label">經度 Longitude</label>
+          <input class="form-input" id="f-lng" type="number" step="any" placeholder="例：12.4964" />
+        </div>
+      </div>
+      <button class="btn-ghost" style="width:100%;font-size:12px;margin-top:-8px" onclick="geocodeAddress()">🔍 從地址自動取得經緯度</button>
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" onclick="closeModal()">取消</button>
@@ -207,29 +219,6 @@
       <div class="modal-footer">
         <button class="btn-ghost" onclick="closeTicketModal()">取消</button>
         <button class="btn-primary" onclick="saveTicket()">儲存</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Config Modal -->
-  <div class="modal-overlay" id="config-overlay">
-    <div class="modal config-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">設定 Supabase</h2>
-      </div>
-      <div class="modal-body">
-        <p class="config-desc">請輸入你的 Supabase 專案資訊，設定將儲存在瀏覽器本地。</p>
-        <div class="form-group">
-          <label class="form-label">Supabase URL</label>
-          <input class="form-input" id="cfg-url" type="text" placeholder="https://xxxx.supabase.co" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Anon Key</label>
-          <input class="form-input" id="cfg-key" type="text" placeholder="eyJh..." />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-primary" onclick="saveConfig()">連線</button>
       </div>
     </div>
   </div>

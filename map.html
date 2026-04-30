@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>附近地點 · Italia</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F0E8;--cream-dark:#EDE6D8;--ink:#1A1714;--ink-soft:#4A443C;
+  --ink-muted:#8A8278;--accent:#C8392B;--gold:#B8954A;
+  --food-txt:#8B2A1E;--shop-txt:#1A4A6E;--restaurant-txt:#2D5A1B;--spot-txt:#3D2870;
+  --food-bg:#FDF0ED;--shop-bg:#EDF3F8;--restaurant-bg:#F0F5ED;--spot-bg:#F0EDF8;
+  --font-display:'Cormorant Garamond',serif;
+  --font-body:'DM Sans',sans-serif;
+}
+html,body{height:100%;font-family:var(--font-body);background:var(--cream);color:var(--ink);overflow:hidden}
+
+/* Header */
+.header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--cream);border-bottom:1px solid rgba(26,23,20,0.1);padding:0.75rem 1.25rem;display:flex;align-items:center;gap:10px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(26,23,20,0.15);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-soft);text-decoration:none;flex-shrink:0}
+.header-title{font-family:var(--font-display);font-size:1.2rem;font-weight:400;flex:1}
+.locate-btn{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;border:none;background:var(--ink);color:var(--cream);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:500;flex-shrink:0;transition:opacity 0.2s}
+.locate-btn:disabled{opacity:0.5}
+
+/* Filter */
+.filter-bar{position:fixed;top:57px;left:0;right:0;z-index:100;padding:0.5rem 1rem;background:var(--cream);border-bottom:1px solid rgba(26,23,20,0.06);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:5px 14px;border-radius:20px;border:1px solid rgba(26,23,20,0.15);background:transparent;font-size:12px;color:var(--ink-muted);cursor:pointer;font-family:var(--font-body);transition:all 0.15s}
+.filter-chip.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+
+/* Map */
+#map {
+  position: fixed;
+  top: 105px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100vh - 105px);
+  width: 100%;
+}
+
+/* Loading */
+.map-loading{position:fixed;top:105px;left:0;right:0;bottom:0;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:50}
+.spinner{width:24px;height:24px;border:2px solid var(--cream-dark);border-top-color:var(--ink-soft);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.map-loading p{font-size:14px;color:var(--ink-muted)}
+
+/* Popup */
+.popup-overlay{position:fixed;bottom:0;left:0;right:0;z-index:200;pointer-events:none}
+.popup-overlay.active{pointer-events:all}
+.popup-backdrop{position:fixed;inset:0}
+.place-popup{
+  position:relative;background:var(--cream);
+  border-radius:20px 20px 0 0;
+  box-shadow:0 -4px 32px rgba(26,23,20,0.15);
+  padding:0.75rem 1.25rem 2.5rem;
+  transform:translateY(100%);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.popup-overlay.active .place-popup{transform:translateY(0)}
+.popup-handle{width:36px;height:3px;background:rgba(26,23,20,0.15);border-radius:2px;margin:0 auto 1rem}
+.popup-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.popup-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.popup-icon.food{background:var(--food-bg)}
+.popup-icon.shop{background:var(--shop-bg)}
+.popup-icon.restaurant{background:var(--restaurant-bg)}
+.popup-icon.spot{background:var(--spot-bg)}
+.popup-meta{flex:1;min-width:0}
+.popup-badge{font-size:11px;padding:2px 8px;border-radius:8px;font-weight:500;display:inline-block;margin-bottom:4px}
+.badge-food{background:var(--food-bg);color:var(--food-txt)}
+.badge-shop{background:var(--shop-bg);color:var(--shop-txt)}
+.badge-restaurant{background:var(--restaurant-bg);color:var(--restaurant-txt)}
+.badge-spot{background:var(--spot-bg);color:var(--spot-txt)}
+.popup-name{font-family:var(--font-display);font-size:1.45rem;font-weight:400;line-height:1.2}
+.popup-note{font-size:12px;color:var(--ink-muted);margin:6px 0 14px;line-height:1.5}
+.popup-actions{display:flex;gap:8px}
+.popup-btn{flex:1;padding:11px;border-radius:20px;border:1px solid rgba(26,23,20,0.2);background:transparent;font-size:13px;color:var(--ink-soft);cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all 0.15s}
+.popup-btn:hover{background:var(--cream-dark)}
+.popup-btn.primary{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.popup-btn.primary:hover{background:#2E2925}
+.popup-btn.hidden{display:none}
+
+/* No location state */
+.no-loc{position:fixed;top:105px;left:0;right:0;bottom:0;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:2rem;text-align:center;z-index:50}
+.no-loc-icon{font-size:3rem}
+.no-loc h3{font-family:var(--font-display);font-size:1.5rem;font-weight:400}
+.no-loc p{font-size:13px;color:var(--ink-muted);line-height:1.6;max-width:280px}
+.no-loc-btn{padding:10px 24px;border-radius:20px;border:none;background:var(--ink);color:var(--cream);font-size:14px;cursor:pointer;font-family:var(--font-body);font-weight:500}
+
+/* Custom marker styles injected via JS */
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="index.html">←</a>
+  <span class="header-title">附近地點</span>
+  <button class="locate-btn" id="locate-btn" onclick="locateMe()">📍 定位</button>
+</div>
+
+<div class="filter-bar" id="filter-bar">
+  <button class="filter-chip active" onclick="setFilter('all',this)">全部</button>
+  <button class="filter-chip" onclick="setFilter('food',this)">🍜 小吃</button>
+  <button class="filter-chip" onclick="setFilter('shop',this)">🛍 購物</button>
+  <button class="filter-chip" onclick="setFilter('restaurant',this)">🍽 餐廳</button>
+  <button class="filter-chip" onclick="setFilter('spot',this)">📷 景點</button>
+</div>
+
+<div class="map-loading" id="map-loading">
+  <div class="spinner"></div>
+  <p>載入地圖中…</p>
+</div>
+
+<div class="no-loc" id="no-loc" style="display:none">
+  <div class="no-loc-icon">📍</div>
+  <h3>開啟定位</h3>
+  <p>允許定位後，可以看到你附近儲存的地點，並直接導航前往</p>
+  <button class="no-loc-btn" onclick="locateMe()">允許定位</button>
+</div>
+
+<div id="map"></div>
+
+<!-- Popup -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup-backdrop" onclick="closePopup()"></div>
+  <div class="place-popup">
+    <div class="popup-handle"></div>
+    <div class="popup-top">
+      <div class="popup-icon" id="p-icon">🍜</div>
+      <div class="popup-meta">
+        <span class="popup-badge" id="p-badge"></span>
+        <div class="popup-name" id="p-name"></div>
+      </div>
+    </div>
+    <div class="popup-note" id="p-note"></div>
+    <div class="popup-actions">
+      <button class="popup-btn" id="p-ig" onclick="openIg()">🎬 IG Reels</button>
+      <button class="popup-btn primary" id="p-nav" onclick="navigate()">📍 導航</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* ── Config ── */
+const SUPABASE_URL = localStorage.getItem('_sb_url') || '';
+const SUPABASE_KEY = localStorage.getItem('_sb_key') || '';
+const GOOGLE_MAPS_KEY = 'AIzaSyA106akAGI-Lculj0qt2fA_fbOlCUnLGXc';
+
+// Read from parent app config
+const sb = supabase.createClient(
+  'https://rwnkdmesqkxpfyokcykz.supabase.co',
+  'sb_publishable_dHQSDT5sPlF_nvri8M9mRw_YFIrlXiX'
+);
+
+/* ── State ── */
+let map = null;
+let allPlaces = [];
+let markers = [];
+let curFilter = 'all';
+var userLat = null;
+var userLng = null;
+let selectedPlace = null;
+
+const CAT_LABELS = { food:'小吃', shop:'購物', restaurant:'餐廳', spot:'景點' };
+const CAT_ICONS = { food:'🍜', shop:'🛍', restaurant:'🍽', spot:'📷' };
+const CAT_COLORS = { food:'#8B2A1E', shop:'#1A4A6E', restaurant:'#2D5A1B', spot:'#3D2870' };
+
+/* ── Load Google Maps ── */
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 14,
+    center: { lat: 41.9028, lng: 12.4964 }, // Roma default
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    zoomControlOptions: {
+      position: google.maps.ControlPosition.RIGHT_CENTER
+    }
+  });
+
+  document.getElementById('map-loading').style.display = 'none';
+  locateMe();
+  loadPlaces(); // 已經是同時執行
+}
+
+/* ── Load places ── */
+async function loadPlaces() {
+  if (allPlaces.length > 0) { renderMarkers(); return; }
+  const { data, error } = await sb.from('places').select('*').not('lat','is',null).not('lng','is',null);
+  if (error) { console.error(error); return; }
+  allPlaces = data || [];
+  renderMarkers();
+
+  // 自動調整地圖範圍包含所有地標
+  if (allPlaces.length > 0) {
+    const bounds = new google.maps.LatLngBounds();
+    allPlaces.forEach(p => bounds.extend({ lat: parseFloat(p.lat), lng: parseFloat(p.lng) }));
+    map.fitBounds(bounds);
+  }
+}
+
+/* ── Render markers ── */
+function renderMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+
+  const filtered = curFilter === 'all' ? allPlaces : allPlaces.filter(p => p.category === curFilter);
+
+  filtered.forEach(place => {
+    const color = CAT_COLORS[place.category] || '#1A1714';
+    const icon = CAT_ICONS[place.category] || '📍';
+
+    const marker = new google.maps.Marker({
+      position: { lat: parseFloat(place.lat), lng: parseFloat(place.lng) },
+      map,
+      title: place.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+        scale: 16,
+      },
+      label: {
+        text: icon,
+        fontSize: '12px',
+      },
+    });
+
+    marker.addListener('click', () => showPopup(place));
+    markers.push(marker);
+  });
+}
+/* ── Show popup ── */
+function showPopup(place) {
+  selectedPlace = place;
+  const cat = place.category;
+  document.getElementById('p-icon').textContent = CAT_ICONS[cat] || '📍';
+  document.getElementById('p-icon').className = 'popup-icon ' + cat;
+  document.getElementById('p-badge').textContent = CAT_LABELS[cat] || cat;
+  document.getElementById('p-badge').className = 'popup-badge badge-' + cat;
+  document.getElementById('p-name').textContent = place.name;
+  document.getElementById('p-note').textContent = place.note || '';
+
+  const igBtn = document.getElementById('p-ig');
+  igBtn.classList.toggle('hidden', !place.ig_url);
+
+  document.getElementById('popup-overlay').classList.add('active');
+  map.panTo({ lat: parseFloat(place.lat), lng: parseFloat(place.lng) });
+}
+
+function closePopup() {
+  document.getElementById('popup-overlay').classList.remove('active');
+  selectedPlace = null;
+}
+
+function openIg() {
+  if (selectedPlace?.ig_url) window.open(selectedPlace.ig_url, '_blank');
+}
+
+function navigate() {
+  if (!selectedPlace) return;
+  const dest = selectedPlace.address
+    ? encodeURIComponent(selectedPlace.address)
+    : `${selectedPlace.lat},${selectedPlace.lng}`;
+  const origin = userLat ? `&origin=${userLat},${userLng}` : '';
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}${origin}`, '_blank');
+}
+
+/* ── Locate user ── */
+function locateMe() {
+  const btn = document.getElementById('locate-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 定位中…';
+
+  if (!navigator.geolocation) {
+    showNoLoc();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      btn.disabled = false;
+      btn.textContent = '📍 已定位';
+
+      if (map) {
+        map.setCenter({ lat: userLat, lng: userLng });
+        map.setZoom(15);
+
+        // User marker
+        new google.maps.Marker({
+          position: { lat: userLat, lng: userLng },
+          map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: '#C8392B',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 3,
+            scale: 8,
+          },
+          title: '你的位置',
+        });
+      }
+      document.getElementById('no-loc').style.display = 'none';
+    },
+    err => {
+      btn.disabled = false;
+      btn.textContent = '📍 定位';
+      if (err.code === 1) {
+        showNoLoc();
+      } else if (err.code === 2) {
+        // kCLErrorLocationUnknown - 暫時無法定位，稍後再試
+        showToast('暫時無法取得位置，請稍後再試');
+      } else if (err.code === 3) {
+        showToast('定位逾時，請再試一次');
+      }
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+function showNoLoc() {
+  document.getElementById('no-loc').style.display = 'flex';
+}
+
+/* ── Filter ── */
+function setFilter(cat, btn) {
+  curFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (map) renderMarkers();
+}
+
+function showToast(msg) {
+  // 簡單用 alert 或自己加一個 toast div
+  console.log(msg);
+}
+</script>
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA106akAGI-Lculj0qt2fA_fbOlCUnLGXc&callback=initMap">
+</script>
+</body>
+</html>
