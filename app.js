@@ -439,7 +439,10 @@ function renderTickets() {
   list.innerHTML = filtered.map(ticket => {
     const members = ticket.ticket_members || [];
     const timeHtml = (ticket.visit_date || ticket.entry_time)
-      ? `<span class="ticket-time">📅 ${ticket.visit_date || ''}&nbsp; ⏰ ${ticket.entry_time || '?'} – ${ticket.exit_time || '?'}</span>`
+      ? `<div class="ticket-time-block">
+          ${ticket.visit_date ? `<span class="ticket-time">📅 ${ticket.visit_date}</span>` : ''}
+          ${ticket.entry_time ? `<span class="ticket-time">⏰ ${ticket.entry_time} – ${ticket.exit_time || '?'}</span>` : ''}
+        </div>`
       : '';
     const membersHtml = members.map(m => `
       <div class="member-row">
@@ -459,6 +462,7 @@ function renderTickets() {
           <span class="ticket-title">${escHtml(ticket.name)}</span>
           ${timeHtml}
           <div class="card-actions" onclick="event.stopPropagation()">
+            <button class="icon-btn" title="編輯" onclick="editTicket('${ticket.id}')">✎</button>
             <button class="icon-btn del" onclick="deleteTicket('${ticket.id}')">✕</button>
           </div>
         </div>
@@ -468,6 +472,12 @@ function renderTickets() {
       </div>
     `;
   }).join('');
+}
+async function editTicket(id) {
+  const ticket = allTickets.find(t => String(t.id) === String(id));
+  if (!ticket) return;
+  modalMembers = (ticket.ticket_members || []).map(m => ({ label: m.label, qr_url: m.qr_url }));
+  openTicketModal(ticket);
 }
 
 function toggleTicket(id) {
