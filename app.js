@@ -278,31 +278,35 @@ async function deletePlace(id) {
     showToast('刪除失敗：' + err.message);
   }
 }
+
 async function geocodeAddress() {
   const address = document.getElementById('f-address').value.trim();
-  if (!address) { showToast('請先填寫地址'); return; }
+  const name = document.getElementById('f-name').value.trim();
+  if (!address && !name) { showToast('請先填寫地址或地點名稱'); return; }
 
-  let query = address;
-  if (address.includes('maps.app.goo.gl') || address.includes('google.com/maps')) {
-    const name = document.getElementById('f-name').value.trim();
-    if (!name) { showToast('請先填寫地點名稱'); return; }
-    query = name;
+  const queries = [];
+
+  if (address && !address.includes('maps.app.goo.gl') && !address.includes('google.com/maps')) {
+    queries.push(address);
   }
+  if (name) queries.push(name);
 
   showToast('查詢中…');
   try {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=AIzaSyA106akAGI-Lculj0qt2fA_fbOlCUnLGXc`
-    );
-    const data = await res.json();
-    if (data.status === 'OK' && data.results.length > 0) {
-      const loc = data.results[0].geometry.location;
-      document.getElementById('f-lat').value = loc.lat.toFixed(6);
-      document.getElementById('f-lng').value = loc.lng.toFixed(6);
-      showToast('✓ 已取得經緯度');
-    } else {
-      showToast('找不到地址，請輸入更精確的地址');
+    for (const query of queries) {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=AIzaSyAdWTtg2s4EPM3Fpux2Urv_4Pbv9EggaKQ`
+      );
+      const data = await res.json();
+      if (data.status === 'OK' && data.results.length > 0) {
+        const loc = data.results[0].geometry.location;
+        document.getElementById('f-lat').value = loc.lat.toFixed(6);
+        document.getElementById('f-lng').value = loc.lng.toFixed(6);
+        showToast('✓ 已取得經緯度');
+        return;
+      }
     }
+    showToast('找不到位置，請手動輸入經緯度');
   } catch (err) {
     showToast('查詢失敗：' + err.message);
   }
